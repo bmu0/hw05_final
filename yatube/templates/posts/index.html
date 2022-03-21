@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  {% load cache %}
+  {% cache 20 index_page %}
+    {% include 'posts/includes/posts_cycle.html' %}
+  {% endcache %}
+
+  {% include 'posts/includes/paginator.html' %}
+
+{% endblock %} 

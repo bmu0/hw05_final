@@ -1,0 +1,33 @@
+
+{% for post in page_obj %}
+  <div class="container pt-3">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between pb-0 pt-3">
+        <p>Автор: <a class="nav-link p-0" href="/profile/{{ post.author.username }}">{{ post.author.get_full_name }}</a></p>
+        <p>Дата публикации: <br> {{ post.created|date:"d E Y" }}</p>
+      </div>
+      <div class="card-body">
+    {% include 'posts/includes/post_picture.html' %}
+    <p>{{ post.text }}</p>
+      </div>
+      <div class="card-footer d-flex justify-content-between">
+    {% if post.group %}
+          {% with request.resolver_match.view_name as view_name %}             
+            {% if view_name  != 'posts:group_list' %}
+            <a class="nav-link p-0" href="{% url 'posts:group_list' post.group.slug %}">
+              все записи группы {{ post.group }}
+            </a>
+            {% endif %} 
+          {% endwith %}
+    {% endif %}
+      <a class="nav-link p-0" href="/posts/{{ post.pk }}">подробная информация</a>
+    {% if post.author.username == user.username %}
+      <a class="nav-link p-0" href="/posts/{{ post.pk }}/edit">
+        редактирование
+      </a>
+    {% endif %}
+    </div>
+    </div> 
+  </div>
+  {# if not forloop.last <hr> endif #}
+{% endfor %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container pt-3">
+  <div class="card">
+    <div class="card-header">
+      <h1>
+        Все посты пользователя {{ author.get_full_name }}
+      </h1>
+    </div>
+    <div class="card-body">
+      <p>
+        Всего постов: {{ post_list.count }}
+      </p>
+    </div>
+  </div>
+</div>
+
+{% include 'posts/includes/posts_cycle.html' %}
+{% include 'posts/includes/paginator.html' %}
+{% endblock %} 

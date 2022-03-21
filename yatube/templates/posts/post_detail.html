@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+    
+
+      <div class="container py-3">
+        <div class="card">
+        <div class="row">
+        <aside class="border-right-2 col-12 col-md-3">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              Дата публикации: {{ post.created|date:"d E Y" }}
+            </li>
+            <!-- если у поста есть группа -->   
+              <li class="list-group-item">
+                Группа: 
+                {% if post.group %} 
+                  {{ post.group }}
+                  <br>
+                {% endif %}
+                
+                {% if post.group %}   
+                  <a href={% url "posts:group_list" post.group.slug %}>все записи группы</a>
+                {% endif %}   
+              </li>
+              <li class="list-group-item">
+                Автор: {{ post.author.get_full_name }}
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+              Всего постов автора:  <span >{{ post_list.count }}</span>
+            </li>
+            <li class="list-group-item">
+              <a href="{{ link }}">
+                все посты пользователя
+              </a>
+            </li>
+            {% if post.author.username == user.username %}
+            <li class="list-group-item">
+              <a href="/posts/{{ post.pk }}/edit">
+                редактирование
+              </a><br>
+            </li>
+            {% endif %} 
+          </ul>
+        </aside>
+        <article class="col-12 col-md-9">
+          {% include 'posts/includes/post_picture.html' %}
+          <p>
+           {{ post.text }} 
+          </p>
+        </article>
+        {% load user_filters %}
+      </div>
+    </div>
+  </div>
+  {% if user.is_authenticated %}
+  <div class="container pb-3">
+  <div class="card">
+    <div class="card-header">Добавить комментарий:</div>
+    <div class="card-body px-4">
+      {% include 'users/form_errors.html' %}
+      <form method="post" action="">
+        {% csrf_token %}      
+        {% include 'users/form_block.html' %}
+        <button type="submit" class="btn btn-primary">Отправить</button>
+      </form>
+    </div>
+  </div>
+  </div>
+  {% endif %}
+
+{% for comment in comments %}
+<div class="container pb-3">
+<div class="card px-3 pt-3">
+  <div class="media mb-4">
+    <div class="media-body">
+      <h5 class="mt-0">
+        <a href="{% url 'posts:profile' comment.author.username %}">
+          {{ comment.author.username }}
+        </a>
+      </h5>
+      <hr>
+        <p>
+         {{ comment.text }}
+        </p>
+      </div>
+    </div>
+</div>
+</div>
+{% endfor %} 
+        </div>
+</div>
+{% endblock %} 

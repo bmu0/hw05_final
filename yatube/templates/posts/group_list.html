@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container pt-3">
+    <div class="card">
+      <div class="card-header">
+        <h1>
+          {{ group.title }}
+        </h1>
+      </div>
+      <div class="card-body">
+        <p>
+          {{ group.description }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {% include 'posts/includes/posts_cycle.html' %}
+
+  {% include 'posts/includes/paginator.html' %}
+
+{% endblock %} 
