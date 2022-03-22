@@ -199,13 +199,13 @@ class PaginatorViewsTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.client = Client()
-        cls.user = User.objects.create_user(username='HasNoName')
+        cls.user = User.objects.create_user(username=constants.USER_NAME_2)
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
 
         cls.group = Group.objects.create(
-            title=constants.GROUP_TITLE,
-            slug=constants.GROUP_SLUG,
+            title=constants.GROUP_TITLE_2,
+            slug=constants.GROUP_SLUG_2,
             description=constants.GROUP_DESCRIPTION,
         )
         for i in range(25):
@@ -222,28 +222,28 @@ class PaginatorViewsTest(TestCase):
 
     def test_first_index_page_contains_ten_records(self):
         response = (self.client.get(reverse(
-            'posts:group_list', kwargs={'slug': constants.GROUP_SLUG}
+            'posts:group_list', kwargs={'slug': constants.GROUP_SLUG_2}
         )))
         self.assertEqual(len(response.context['page_obj']), 10)
 
     def test_third_index_page_contains_three_records(self):
         response = (self.client.get(reverse(
             'posts:group_list',
-            kwargs={'slug': constants.GROUP_SLUG}
+            kwargs={'slug': constants.GROUP_SLUG_2}
         ) + '?page=3'))
         self.assertEqual(len(response.context['page_obj']), 6)
 
     def test_first_group_page_contains_ten_records(self):
         response = (self.client.get(reverse(
             'posts:group_list',
-            kwargs={'slug': constants.GROUP_SLUG}
+            kwargs={'slug': constants.GROUP_SLUG_2}
         )))
         self.assertEqual(len(response.context['page_obj']), 10)
 
     def test_third_group_page_contains_three_records(self):
         response = (self.client.get(reverse(
             'posts:group_list',
-            kwargs={'slug': constants.GROUP_SLUG}
+            kwargs={'slug': constants.GROUP_SLUG_2}
         ) + '?page=3'))
         self.assertEqual(len(response.context['page_obj']), 6)
 
