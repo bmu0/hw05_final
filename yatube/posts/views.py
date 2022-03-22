@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 
 from yatube.settings import POSTS_PAGE_COUNT
-from .models import Post, Group, Comment
+from .models import Post, Group, Comment, Follow
 from .forms import PostForm, PostEditForm, CommentForm
 
 
@@ -40,12 +40,21 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
+    following = False
     post_list = Post.objects.filter(author__username=username)
     paginator = Paginator(post_list, POSTS_PAGE_COUNT)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     author = get_object_or_404(User, username=username)
+    if request.user.is_authenticated:
+        subscribes = Follow.objects.filter(user=request.user)
+        for i in subscribes:
+            if i.author == author:
+                following = True
+    subscribers = len(Follow.objects.filter(author__username=username))
     context = {
+        'subscribers': subscribers,
+        'following': following,
         'title': f'Профайл пользователя {username}',
         'page_obj': page_obj,
         'author': author,
@@ -133,3 +142,47 @@ def add_comment(request, post_id):
         comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
+
+
+@login_required
+def follow_index(request):
+    template = 'posts/follow.html'
+    # post_list = Post.objects.all()
+    subscribes = []
+    subscribes_query = Follow.objects.filter(user=request.user)
+    for i in subscribes_query:
+        subscribes.append(i.author.username)
+    post_list = Post.objects.filter(author__username__in=subscribes)
+    print(subscribes)
+    paginator = Paginator(post_list, POSTS_PAGE_COUNT)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'page_obj': page_obj,
+        'title': 'Мои подписки'
+    }
+    return render(request, template, context)
+
+
+@login_required
+def profile_follow(request, username):
+    if username != request.user.username:
+        subscribes = []
+        subscribes_query = Follow.objects.filter(user=request.user)
+        for i in subscribes_query:
+            subscribes.append(i.author.username)
+        if username not in subscribes:
+            Follow.objects.create(
+                user=request.user,
+                author=User.objects.get(username=username)
+            )
+    return redirect('posts:profile', username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    Follow.objects.get(
+        user=request.user,
+        author=User.objects.get(username=username)
+    ).delete()
+    return redirect('posts:profile', username)

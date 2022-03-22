@@ -8,11 +8,14 @@
       <h1>
         Все посты пользователя {{ author.get_full_name }}
       </h1>
+      
     </div>
-    <div class="card-body">
-      <p>
+    <div class="card-body d-flex justify-content-between">
+      <h3 class="pt-2">
         Всего постов: {{ post_list.count }}
-      </p>
+        Всего подписчиков: {{ subscribers }}
+      </h3>
+      {% include 'posts/includes/subscribe_btn.html' %}
     </div>
   </div>
 </div>

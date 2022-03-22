@@ -43,9 +43,6 @@ class Post(CreatedModel):
         help_text='Выберите картинку'
     )
 
-    class Meta:
-        ordering = ('-created', )
-
     def __str__(self):
         return self.text[:15]
 
@@ -68,4 +65,22 @@ class Comment(CreatedModel):
         related_name='comments'
     )
     text = models.TextField('Текст комментария', help_text='Введите текст')
-    created = models.DateTimeField('Дата и время', auto_now_add=True)
+
+
+class Follow(CreatedModel):
+    user = models.ForeignKey(
+        User,
+        verbose_name='Подписчик',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name='follower'
+    )
+    author = models.ForeignKey(
+        User,
+        verbose_name='Блоггер',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name='following'
+    )

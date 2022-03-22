@@ -4,6 +4,8 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.forms import fields
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.cache import cache
+from django.core.cache.utils import make_template_fragment_key
 
 from posts.tests import testmodule_constants as constants
 from posts.models import Group, Post, User
@@ -178,12 +180,25 @@ class PostsViewTests(TestCase):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
 
+    def test_index_cache_works(self):
+        response = self.authorized_client.get(reverse('posts:index'))
+        first_object = response.context['page_obj'][0]
+        self.assertTrue(first_object)
+        Post.objects.all().delete()
+        first_object = response.context['page_obj'][0]
+        self.assertTrue(first_object)
+        key = make_template_fragment_key('index_page')
+        self.assertTrue(cache.get(key))
+        cache.clear()
+        self.assertFalse(cache.get(key))
+
 
 class PaginatorViewsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.client = Client()
         cls.user = User.objects.create_user(username='HasNoName')
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)

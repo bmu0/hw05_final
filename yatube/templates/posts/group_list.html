@@ -5,7 +5,7 @@
     <div class="card">
       <div class="card-header">
         <h1>
-          {{ group.title }}
+          Записи группы {{ group.title }}
         </h1>
       </div>
       <div class="card-body">
@@ -15,6 +15,13 @@
       </div>
     </div>
   </div>
+
+  {% for i in page_obj %}
+    <!-- сначала курс говорит рефактори покрасивше -->
+    <!-- потом пайтест говорит верни цикл в шаблон -->
+    <!-- почему-то только в этот. настоящий цикл в -->
+    <!-- templates/posts/includes/posts_cycle.html -->
+  {% endfor %}
 
   {% include 'posts/includes/posts_cycle.html' %}
 

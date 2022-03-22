@@ -50,7 +50,7 @@ class PostsFormsTests(TestCase):
             Post.objects.filter(
                 group=PostsFormsTests.group,
                 text='text',
-            ).reverse()[0] == Post.objects.latest('pub_date')
+            ).reverse()[0] == Post.objects.latest('created')
         )
 
     def test_edit_post(self):
