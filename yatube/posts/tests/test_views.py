@@ -261,7 +261,7 @@ class PaginatorViewsTest(TestCase):
         self.assertEqual(len(response.context['page_obj']), 6)
 
 
-class PaginatorViewsTest(TestCase):
+class FollowViewsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
