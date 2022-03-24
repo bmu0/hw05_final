@@ -261,20 +261,16 @@ class PaginatorViewsTest(TestCase):
         self.assertEqual(len(response.context['page_obj']), 6)
 
 
-class FollowViewsTest(TestCase):
+class FollowsViewsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.client = Client()
         cls.user = User.objects.create_user(username=constants.USER_NAME)
         cls.user_2 = User.objects.create_user(username=constants.USER_NAME_2)
         cls.user_3 = User.objects.create_user(username=constants.USER_NAME_3)
         cls.authorized_client = Client()
-        cls.another_authorized = Client()
         cls.authorized_client.force_login(cls.user)
-        cls.another_authorized.force_login(cls.user_3)
-
         cls.group = Group.objects.create(
             title=constants.GROUP_TITLE_2,
             slug=constants.GROUP_SLUG_2,
@@ -291,6 +287,10 @@ class FollowViewsTest(TestCase):
             group=cls.group,
             author=cls.user_2
         )
+        cls.follow = Follow.objects.create(
+            user=cls.user_3,
+            author=cls.user
+        )
 
     def test_follow_creates_deletes_and_shows_correct_follows(self):
         # самоподписка
@@ -298,34 +298,18 @@ class FollowViewsTest(TestCase):
             reverse(
                 'posts:profile_follow',
                 kwargs={'username': self.user.username}
-            ),
-            follow=True
+            )
         )
         new_follow = Follow.objects.filter(user=self.user)
         # самоподписка не создалась
         self.assertTrue(new_follow.count() == 0)
-
         self.authorized_client.get(
             reverse(
                 'posts:profile_follow',
                 kwargs={'username': self.user_2.username}
-            ),
-            follow=True
-        )
-        self.another_authorized.get(
-            reverse(
-                'posts:profile_follow',
-                kwargs={'username': self.user.username}
-            ),
-            follow=True
+            )
         )
         response = self.authorized_client.get(
-            reverse(
-                'posts:follow_index'
-            ),
-            follow=True
-        )
-        response_2 = self.another_authorized.get(
             reverse(
                 'posts:follow_index'
             ),
@@ -334,26 +318,28 @@ class FollowViewsTest(TestCase):
         new_follow = Follow.objects.filter(user=self.user)
         another_follow = Follow.objects.get(user=self.user_3)
         first_object = response.context['page_obj'][0]
-        another_first_object = response_2.context['page_obj'][0]
         self.assertTemplateUsed(
             response,
             'posts/follow.html'
         )
-        self.assertTemplateUsed(
-            response_2,
-            'posts/follow.html'
-        )
+        print('\nOK')
         self.assertTrue(new_follow.count() == 1)
+        print('\nOK')
         self.assertTrue(new_follow[0].author.username == constants.USER_NAME_2)
+        print('\nOK')
         self.assertTrue(another_follow.author.username == constants.USER_NAME)
+        print('\nOK')
         self.assertFalse(first_object.text == constants.POST_TEXT)
+        print('\nOK')
         self.assertEquals(first_object.text, constants.POST_TEXT_2)
-        self.assertTrue(another_first_object.text == constants.POST_TEXT)
-        self.another_authorized.get(
+        print('\nOK')
+        self.authorized_client.get(
             reverse(
                 'posts:profile_unfollow',
-                kwargs={'username': self.user.username}
+                kwargs={'username': self.user_2.username}
             )
         )
-        deleted_follow_count = Follow.objects.filter(user=self.user_3).count()
+        print('\nOK')
+        deleted_follow_count = Follow.objects.filter(user=self.user).count()
         self.assertTrue(deleted_follow_count == 0)
+        print('\nOK')

@@ -137,7 +137,6 @@ def follow_index(request):
     for i in subscribes_query:
         subscribes.append(i.author.username)
     post_list = Post.objects.filter(author__username__in=subscribes)
-    print(subscribes)
     paginator = Paginator(post_list, POSTS_PAGE_COUNT)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
