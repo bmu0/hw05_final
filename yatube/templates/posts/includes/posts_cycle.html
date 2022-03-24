@@ -8,7 +8,7 @@
       </div>
       <div class="card-body">
     {% include 'posts/includes/post_picture.html' %}
-    <p>{{ post.text }}</p>
+    <p>{{ post.text|linebreaksbr }}</p>
       </div>
       <div class="card-footer d-flex justify-content-between">
     {% if post.group %}

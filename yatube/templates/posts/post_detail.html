@@ -46,7 +46,7 @@
         <article class="col-12 col-md-9">
           {% include 'posts/includes/post_picture.html' %}
           <p>
-           {{ post.text }} 
+           {{ post.text|linebreaksbr }} 
           </p>
         </article>
         {% load user_filters %}
