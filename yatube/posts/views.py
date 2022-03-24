@@ -5,9 +5,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 
 from yatube.settings import POSTS_PAGE_COUNT
-from .models import Post, Group, Comment, Follow
+from .models import Post, Group, Follow
 from .forms import PostForm, PostEditForm, CommentForm
-
 
 User = get_user_model()
 
@@ -66,26 +65,11 @@ def profile(request, username):
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     post_list = Post.objects.filter(author__username=post.author.username)
-    link = '/profile/' + post.author.username
-    comments = post.comments.all()
     form = CommentForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        text = form.cleaned_data['text']
-        user = request.user
-        Comment.objects.create(
-            text=text,
-            post=post,
-            author=user,
-        )
-        return redirect('posts:post_detail', post_id)
-    else:
-        form = CommentForm()
     context = {
-        'comments': comments,
         'title': post,
         'post': post,
         'post_list': post_list,
-        'link': link,
         'form': form,
     }
     return render(request, 'posts/post_detail.html', context)
@@ -94,7 +78,7 @@ def post_detail(request, post_id):
 @login_required
 def post_create(request):
     form = PostForm(request.POST or None, files=request.FILES or None,)
-    if request.method == 'POST' and form.is_valid():
+    if form.is_valid():
         text = form.cleaned_data['text']
         group = form.cleaned_data['group']
         image = form.cleaned_data['image']

@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 
 from posts.tests import testmodule_constants as constants
-from posts.models import Group, Post, User
+from posts.models import Follow, Group, Post, User
 from yatube import settings
 
 
@@ -259,3 +259,101 @@ class PaginatorViewsTest(TestCase):
             kwargs={'username': self.user.username}
         ) + '?page=3'))
         self.assertEqual(len(response.context['page_obj']), 6)
+
+
+class PaginatorViewsTest(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.client = Client()
+        cls.user = User.objects.create_user(username=constants.USER_NAME)
+        cls.user_2 = User.objects.create_user(username=constants.USER_NAME_2)
+        cls.user_3 = User.objects.create_user(username=constants.USER_NAME_3)
+        cls.authorized_client = Client()
+        cls.another_authorized = Client()
+        cls.authorized_client.force_login(cls.user)
+        cls.another_authorized.force_login(cls.user_3)
+
+        cls.group = Group.objects.create(
+            title=constants.GROUP_TITLE_2,
+            slug=constants.GROUP_SLUG_2,
+            description=constants.GROUP_DESCRIPTION,
+        )
+        for i in range(25):
+            Post.objects.create(
+                text=constants.POST_TEXT,
+                group=cls.group,
+                author=cls.user
+            )
+        cls.post = Post.objects.create(
+            text=constants.POST_TEXT_2,
+            group=cls.group,
+            author=cls.user_2
+        )
+
+    def test_follow_creates_deletes_and_shows_correct_follows(self):
+        # самоподписка
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user.username}
+            ),
+            follow=True
+        )
+        new_follow = Follow.objects.filter(user=self.user)
+        # самоподписка не создалась
+        self.assertTrue(new_follow.count() == 0)
+
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user_2.username}
+            ),
+            follow=True
+        )
+        self.another_authorized.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user.username}
+            ),
+            follow=True
+        )
+        response = self.authorized_client.get(
+            reverse(
+                'posts:follow_index'
+            ),
+            follow=True
+        )
+        response_2 = self.another_authorized.get(
+            reverse(
+                'posts:follow_index'
+            ),
+            follow=True
+        )
+        new_follow = Follow.objects.filter(user=self.user)
+        another_follow = Follow.objects.get(user=self.user_3)
+        first_object = response.context['page_obj'][0]
+        another_first_object = response_2.context['page_obj'][0]
+        self.assertTemplateUsed(
+            response,
+            'posts/follow.html'
+        )
+        self.assertTemplateUsed(
+            response_2,
+            'posts/follow.html'
+        )
+        self.assertTrue(new_follow.count() == 1)
+        self.assertTrue(new_follow[0].author.username == constants.USER_NAME_2)
+        self.assertTrue(another_follow.author.username == constants.USER_NAME)
+        self.assertFalse(first_object.text == constants.POST_TEXT)
+        self.assertEquals(first_object.text, constants.POST_TEXT_2)
+        self.assertTrue(another_first_object.text == constants.POST_TEXT)
+        self.another_authorized.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': self.user.username}
+            )
+        )
+        deleted_follow_count = Follow.objects.filter(user=self.user_3).count()
+        self.assertTrue(deleted_follow_count == 0)

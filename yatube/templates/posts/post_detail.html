@@ -30,7 +30,7 @@
               Всего постов автора:  <span >{{ post_list.count }}</span>
             </li>
             <li class="list-group-item">
-              <a href="{{ link }}">
+              <a href="/profile/{{ post.author.username }}">
                 все посты пользователя
               </a>
             </li>
@@ -59,7 +59,7 @@
     <div class="card-header">Добавить комментарий:</div>
     <div class="card-body px-4">
       {% include 'users/form_errors.html' %}
-      <form method="post" action="">
+      <form method="post" action="{% url 'posts:add_comment' post.id %}">
         {% csrf_token %}      
         {% include 'users/form_block.html' %}
         <button type="submit" class="btn btn-primary">Отправить</button>
@@ -69,7 +69,7 @@
   </div>
   {% endif %}
 
-{% for comment in comments %}
+{% for comment in post.comments.all %}
 <div class="container pb-3">
 <div class="card px-3 pt-3">
   <div class="media mb-4">

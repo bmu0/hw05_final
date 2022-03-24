@@ -64,7 +64,13 @@ class Comment(CreatedModel):
         null=True,
         related_name='comments'
     )
-    text = models.TextField('Текст комментария', help_text='Введите текст')
+    text = models.TextField(
+        'Текст комментария',
+        help_text='Введите текст'
+    )
+
+    class Meta:
+        ordering = ('created', )
 
 
 class Follow(CreatedModel):
@@ -73,7 +79,6 @@ class Follow(CreatedModel):
         verbose_name='Подписчик',
         on_delete=models.CASCADE,
         blank=True,
-        null=True,
         related_name='follower'
     )
     author = models.ForeignKey(
@@ -81,6 +86,16 @@ class Follow(CreatedModel):
         verbose_name='Блоггер',
         on_delete=models.CASCADE,
         blank=True,
-        null=True,
         related_name='following'
     )
+
+    class Meta:
+        unique_together = ['user', 'author']
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(
+                    user=models.F('author')
+                ),
+                name='user_is_not_author'
+            ),
+        ]

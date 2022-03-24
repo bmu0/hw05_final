@@ -30,11 +30,13 @@ class PostsURLTests(TestCase):
             f'/profile/{cls.user.username}/': 'posts/profile.html',
             f'/posts/{cls.post.pk}/': 'posts/post_detail.html',
             f'/posts/{cls.post.pk}/edit/': 'posts/create_post.html',
+            f'/profile/{cls.user.username}/follow/': 'posts/profile.html',
         }
         cls.url_templates_unlogged_in = {
             f'/profile/{cls.user.username}/': 'posts/profile.html',
             f'/posts/{cls.post.pk}/': 'posts/post_detail.html',
             f'/posts/{cls.post.pk}/edit/': 'users/login.html',
+            f'/profile/{cls.user.username}/follow/': 'users/login.html',
         }
 
     def test_dynamic_urls_uses_correct_template(self):
@@ -46,7 +48,7 @@ class PostsURLTests(TestCase):
                     and self.post.author != self.user
                 ):
                     template = 'posts/post_detail.html'
-                response = self.authorized_client.get(address)
+                response = self.authorized_client.get(address, follow=True)
                 self.assertTemplateUsed(response, template)
         for address, template in self.url_templates_unlogged_in.items():
             with self.subTest(address=address):

@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from posts.tests import testmodule_constants as constants
-from posts.models import Group, Post, User
+from posts.models import Comment, Group, Post, User
 
 
 class PostsFormsTests(TestCase):
@@ -80,6 +80,8 @@ class PostsFormsTests(TestCase):
             'post': self.post,
             'text': constants.POST_TEXT
         }
+        comments_count = Comment.objects.filter(post=self.post).count()
+        self.assertTrue(comments_count == 0)
         self.guest.post(
             reverse('posts:add_comment', args=(f'{post_id}',)),
             data=form_data
@@ -99,6 +101,7 @@ class PostsFormsTests(TestCase):
             reverse('posts:add_comment', args=(f'{post_id}',)),
             data=form_data
         )
+        comments_count = Comment.objects.filter(post=self.post).count()
         last_comment = self.post.comments.reverse()[0]
         self.assertTrue(
             self.post.comments.count() == comment_count + 1
@@ -106,3 +109,4 @@ class PostsFormsTests(TestCase):
         self.assertEqual(
             last_comment.text, constants.POST_TEXT_2
         )
+        self.assertTrue(comments_count == 1)
