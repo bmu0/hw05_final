@@ -14,6 +14,9 @@ POST_TEXT_2 = '01234567891234567890'
 USER_NAME = 'HasNoName'
 USER_NAME_2 = 'SuperPuperUser'
 USER_NAME_3 = 'Anonimus'
+USER_NAME_4 = 'HasNoNameAtAll'
+USER_NAME_5 = 'SuperPuperUserNot'
+USER_NAME_6 = 'AnonimusKek'
 
 URLS_FOR_USER = {
     '/': 'posts/index.html',

@@ -261,14 +261,14 @@ class PaginatorViewsTest(TestCase):
         self.assertEqual(len(response.context['page_obj']), 6)
 
 
-class FollowsViewsTest(TestCase):
+class FollowViewsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username=constants.USER_NAME)
-        cls.user_2 = User.objects.create_user(username=constants.USER_NAME_2)
-        cls.user_3 = User.objects.create_user(username=constants.USER_NAME_3)
+        cls.user = User.objects.create_user(username=constants.USER_NAME_4)
+        cls.user_2 = User.objects.create_user(username=constants.USER_NAME_5)
+        cls.user_3 = User.objects.create_user(username=constants.USER_NAME_6)
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
         cls.group = Group.objects.create(
@@ -293,16 +293,6 @@ class FollowsViewsTest(TestCase):
         )
 
     def test_follow_creates_deletes_and_shows_correct_follows(self):
-        # самоподписка
-        self.authorized_client.get(
-            reverse(
-                'posts:profile_follow',
-                kwargs={'username': self.user.username}
-            )
-        )
-        new_follow = Follow.objects.filter(user=self.user)
-        # самоподписка не создалась
-        self.assertTrue(new_follow.count() == 0)
         self.authorized_client.get(
             reverse(
                 'posts:profile_follow',
@@ -322,24 +312,30 @@ class FollowsViewsTest(TestCase):
             response,
             'posts/follow.html'
         )
-        print('\nOK')
         self.assertTrue(new_follow.count() == 1)
-        print('\nOK')
-        self.assertTrue(new_follow[0].author.username == constants.USER_NAME_2)
-        print('\nOK')
-        self.assertTrue(another_follow.author.username == constants.USER_NAME)
-        print('\nOK')
+        self.assertTrue(new_follow[0].author.username == constants.USER_NAME_5)
+        self.assertTrue(
+            another_follow.author.username == constants.USER_NAME_4
+        )
         self.assertFalse(first_object.text == constants.POST_TEXT)
-        print('\nOK')
-        self.assertEquals(first_object.text, constants.POST_TEXT_2)
-        print('\nOK')
+        self.assertEqual(first_object.text, constants.POST_TEXT_2)
         self.authorized_client.get(
             reverse(
                 'posts:profile_unfollow',
                 kwargs={'username': self.user_2.username}
             )
         )
-        print('\nOK')
         deleted_follow_count = Follow.objects.filter(user=self.user).count()
         self.assertTrue(deleted_follow_count == 0)
-        print('\nOK')
+
+    def test_self_sub(self):
+        # самоподписка
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user.username}
+            )
+        )
+        new_follow = Follow.objects.filter(user=self.user)
+        # самоподписка не создалась
+        self.assertTrue(new_follow.count() == 0)
