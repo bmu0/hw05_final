@@ -3,12 +3,12 @@
 <html lang="ru">
   <head>    
     {% include "includes/head.html" %}
+    <title>
+      {% block title %}
+        Заголовок не подвезли
+      {% endblock %}
+    </title>
   </head>
-  <title>
-    {% block title %}
-      Заголовок не подвезли
-    {% endblock %}
-  </title>
   <body>
     {% include "includes/header.html" %}
     <main>
