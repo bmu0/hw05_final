@@ -13,6 +13,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '[::1]',
     'testserver',
+    'www.bmu0.pythonanywhere.com',
+    'bmu0.pythonanywhere.com',
 ]
 
 POSTS_PAGE_COUNT = 10
