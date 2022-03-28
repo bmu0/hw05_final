@@ -4,7 +4,7 @@
     
 
       <div class="container py-3">
-        <div class="card">
+        <div class="card px-2">
         <div class="row">
         <aside class="border-right-2 col-12 col-md-3">
           <ul class="list-group list-group-flush">
@@ -69,25 +69,7 @@
   </div>
   {% endif %}
 
-{% for comment in post.comments.all %}
-<div class="container pb-3">
-<div class="card px-3 pt-3">
-  <div class="media mb-4">
-    <div class="media-body">
-      <h5 class="mt-0">
-        <a href="{% url 'posts:profile' comment.author.username %}">
-          {{ comment.author.username }}
-        </a>
-      </h5>
-      <hr>
-        <p>
-         {{ comment.text }}
-        </p>
-      </div>
-    </div>
-</div>
-</div>
-{% endfor %} 
+  {% include 'posts/includes/comments_cycle.html' %}
         </div>
 </div>
 {% endblock %} 

@@ -72,7 +72,14 @@ class PostsViewTests(TestCase):
             if os.path.isfile(os.path.join(images_path, i))
             and i.startswith('small')
         ]
+        files_2 = [
+            i for i in os.listdir(images_path)
+            if os.path.isfile(os.path.join(images_path, i))
+            and i.startswith('image')
+        ]
         for file in files:
+            os.remove(os.path.join(images_path, file))
+        for file in files_2:
             os.remove(os.path.join(images_path, file))
 
     def test_pages_uses_correct_template(self):
@@ -183,11 +190,11 @@ class PostsViewTests(TestCase):
     def test_index_cache_works(self):
         response = self.authorized_client.get(reverse('posts:index'))
         first_object = response.context['page_obj'][0]
+        key = make_template_fragment_key('index_page')
         self.assertTrue(first_object)
         Post.objects.all().delete()
         first_object = response.context['page_obj'][0]
         self.assertTrue(first_object)
-        key = make_template_fragment_key('index_page')
         self.assertTrue(cache.get(key))
         cache.clear()
         self.assertFalse(cache.get(key))

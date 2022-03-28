@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from posts.tests import testmodule_constants as constants
 from posts.models import Comment, Group, Post, User
@@ -19,6 +20,19 @@ class PostsFormsTests(TestCase):
             slug=constants.GROUP_SLUG,
             description=constants.GROUP_DESCRIPTION,
         )
+        cls.small = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        cls.image = SimpleUploadedFile(
+            name='image.gif',
+            content=cls.small,
+            content_type='image/gif'
+        )
         cls.post = Post.objects.create(
             text=constants.POST_TEXT,
             group=PostsFormsTests.group,
@@ -30,11 +44,15 @@ class PostsFormsTests(TestCase):
         form_data = {
             'text': 'text',
             'group': PostsFormsTests.group.pk,
+            'image': self.image,
         }
         response = self.authorized_client.post(
             reverse('posts:post_create'),
-            data=form_data
+            data=form_data,
+            follow=True
         )
+        post_order = Post.objects.order_by('id').last()
+        self.assertEqual(post_order.image.name, 'posts/' + 'image.gif')
         self.assertRedirects(
             response,
             reverse('posts:profile', kwargs={'username': f'{self.user}'})

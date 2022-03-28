@@ -89,7 +89,7 @@ def post_create(request):
             author=user,
             image=image
         )
-        return redirect('posts:profile', request.user)
+        return redirect('posts:profile', request.user.username)
     else:
         form = PostForm()
     return render(request, 'posts/create_post.html', {'form': form})
