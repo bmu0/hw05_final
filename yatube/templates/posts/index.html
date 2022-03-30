@@ -10,7 +10,7 @@
   </div>
 </div>
   {% load cache %}
-  {% cache 20 index_page %}
+  {% cache 20 index_page page_obj %}
     {% include 'posts/includes/posts_cycle.html' %}
   {% endcache %}
 

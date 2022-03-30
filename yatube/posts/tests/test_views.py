@@ -1,4 +1,5 @@
 import os
+import time
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -190,10 +191,13 @@ class PostsViewTests(TestCase):
     def test_index_cache_works(self):
         response = self.authorized_client.get(reverse('posts:index'))
         first_object = response.context['page_obj'][0]
-        key = make_template_fragment_key('index_page')
+        key = make_template_fragment_key(
+            'index_page',
+            [response.context['page_obj']]
+        )
         self.assertTrue(first_object)
         Post.objects.all().delete()
-        first_object = response.context['page_obj'][0]
+        response = self.authorized_client.get(reverse('posts:index'))
         self.assertTrue(first_object)
         self.assertTrue(cache.get(key))
         cache.clear()
