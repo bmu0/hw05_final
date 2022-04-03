@@ -17,7 +17,7 @@ def csrf_failure(request, reason=''):
 def handler500(request, *args, **argv):
     return render(
         request,
-        'core/403csrf.html',
+        'core/500.html',
         {'path': request.path},
-        status=403
+        status=500
     )

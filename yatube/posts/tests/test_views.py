@@ -1,6 +1,7 @@
-import os
+import shutil
+import tempfile
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.forms import fields
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -11,7 +12,10 @@ from posts.tests import testmodule_constants as constants
 from posts.models import Follow, Group, Post, User
 from yatube import settings
 
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostsViewTests(TestCase):
 
     @classmethod
@@ -65,22 +69,8 @@ class PostsViewTests(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        # я это в интернетах нашел, я не знаю насколько это норма вообще
-        images_path = os.path.join(settings.BASE_DIR, 'media/posts')
-        files = [
-            i for i in os.listdir(images_path)
-            if os.path.isfile(os.path.join(images_path, i))
-            and i.startswith('small')
-        ]
-        files_2 = [
-            i for i in os.listdir(images_path)
-            if os.path.isfile(os.path.join(images_path, i))
-            and i.startswith('image')
-        ]
-        for file in files:
-            os.remove(os.path.join(images_path, file))
-        for file in files_2:
-            os.remove(os.path.join(images_path, file))
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""

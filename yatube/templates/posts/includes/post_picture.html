@@ -1,4 +1,3 @@
-{% load thumbnail %}
-{% thumbnail post.image "930" crop="center" upscale=True as im %}
-  <img class="card-img my-2" src="{{ im.url }}">
-{% endthumbnail %}
+{% if post.image %}
+  <img class="card-img my-2" src="/media/{{ post.image }}">
+{% endif %}

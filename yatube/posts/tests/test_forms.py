@@ -1,11 +1,19 @@
-from django.test import TestCase, Client
+import shutil
+import tempfile
+
+
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from posts.tests import testmodule_constants as constants
 from posts.models import Comment, Group, Post, User
+from yatube import settings
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostsFormsTests(TestCase):
 
     @classmethod
@@ -38,6 +46,11 @@ class PostsFormsTests(TestCase):
             group=PostsFormsTests.group,
             author=cls.user
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def test_create_post(self):
         posts_count = Post.objects.count()

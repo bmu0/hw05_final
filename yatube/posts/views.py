@@ -13,10 +13,12 @@ User = get_user_model()
 
 def index(request):
     template = 'posts/index.html'
-    post_list = Post.objects.all()
-    paginator = Paginator(post_list, POSTS_PAGE_COUNT)
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = Paginator(
+        Post.objects
+        .select_related('author', 'group'),
+        POSTS_PAGE_COUNT
+    ).get_page(page_number)
     context = {
         'page_obj': page_obj,
         'title': 'Последние обновления на сайте'
@@ -25,32 +27,51 @@ def index(request):
 
 
 def group_posts(request, slug):
-    group = get_object_or_404(Group, slug=slug)
-    post_list = group.group_name.all()
-    paginator = Paginator(post_list, POSTS_PAGE_COUNT)
+    template = 'posts/group_list.html'
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = Paginator(
+        Post.objects
+        .filter(group__slug=slug)
+        .select_related('author', 'group'),
+        POSTS_PAGE_COUNT
+    ).get_page(page_number)
+    group = get_object_or_404(Group, slug=slug)
     context = {
         'group': group,
         'page_obj': page_obj,
         'title': f'Записи сообщества {group}'
     }
-    return render(request, 'posts/group_list.html', context)
+    return render(request, template, context)
 
 
 def profile(request, username):
     following = False
-    post_list = Post.objects.filter(author__username=username)
-    paginator = Paginator(post_list, POSTS_PAGE_COUNT)
+    template = 'posts/profile.html'
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    post_list = (
+        Post.objects.
+        filter(author__username=username)
+        .select_related('author', 'group')
+    )
+    page_obj = Paginator(
+        post_list,
+        POSTS_PAGE_COUNT
+    ).get_page(page_number)
     author = get_object_or_404(User, username=username)
     if request.user.is_authenticated:
-        subscribes = Follow.objects.filter(user=request.user)
+        subscribes = (
+            Follow.objects
+            .filter(user=request.user)
+            .select_related('user', 'author')
+        )
         for i in subscribes:
             if i.author == author:
                 following = True
-    subscribers = len(Follow.objects.filter(author__username=username))
+    subscribers = len(
+        Follow.objects
+        .filter(author__username=username)
+        .select_related('user', 'author')
+    )
     context = {
         'subscribers': subscribers,
         'following': following,
@@ -59,20 +80,29 @@ def profile(request, username):
         'author': author,
         'post_list': post_list,
     }
-    return render(request, 'posts/profile.html', context)
+    return render(request, template, context)
 
 
 def post_detail(request, post_id):
+    template = 'posts/post_detail.html'
     post = get_object_or_404(Post, id=post_id)
-    post_list = Post.objects.filter(author__username=post.author.username)
+    post_list = (
+        Post.objects
+        .filter(
+            author__username=post.author.username
+        )
+        .select_related('author', 'group')
+    )
+    comments = post.comments.select_related('author', 'post')
     form = CommentForm(request.POST or None)
     context = {
+        'comments': comments,
         'title': post,
         'post': post,
         'post_list': post_list,
         'form': form,
     }
-    return render(request, 'posts/post_detail.html', context)
+    return render(request, template, context)
 
 
 @login_required
@@ -133,10 +163,18 @@ def follow_index(request):
     template = 'posts/follow.html'
     # post_list = Post.objects.all()
     subscribes = []
-    subscribes_query = Follow.objects.filter(user=request.user)
+    subscribes_query = (
+        Follow.objects
+        .select_related('user', 'author')
+        .filter(user=request.user)
+    )
     for i in subscribes_query:
         subscribes.append(i.author.username)
-    post_list = Post.objects.filter(author__username__in=subscribes)
+    post_list = (
+        Post.objects
+        .filter(author__username__in=subscribes)
+        .select_related('author', 'group')
+    )
     paginator = Paginator(post_list, POSTS_PAGE_COUNT)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
